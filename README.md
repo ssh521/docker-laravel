@@ -1,5 +1,10 @@
 ## Environment Setup for the Latest Version of Laravel (PHP, Nginx, Laravel, MySql) Using Docker
 
+## 1. Project Structure
+
+![폴더구조](image.png)
+
+
 ### Project Structure
 
 - `docker` - Folder for all configuration files for docker and other services
@@ -15,8 +20,8 @@
 - Remove empty files from src and mysql dirs.
 
   ```
-  rm src/empty
-  rm mysql/empty
+  mkdir -p ./src
+  mkdir -p ./mysql
   ```
 
 - In docker-compose.yml, change the data to access the database
@@ -52,7 +57,7 @@
   docker compose up -d
   ```
 
-- You can verify if the project is working by opening the browser. For example, if it’s set to 80:
+- You can verify if the project is working by opening the browser. For example, if it's set to 80:
 
   ```
   http://localhost
