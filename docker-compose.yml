@@ -1,0 +1,78 @@
+services:
+
+    nginx:
+        build:
+            context: .
+            dockerfile: ./docker/nginx.Dockerfile
+        depends_on:
+            - php
+            - mysql
+        container_name: laravel11_nginx
+        ports:
+            - 8100:80
+        volumes:
+            - ./src:/var/www/html
+
+    php:
+        build:
+            context: .
+            dockerfile: ./docker/php.Dockerfile
+        container_name: laravel11_php
+        volumes:
+            - ./src:/var/www/html
+
+    mysql:
+        image: mysql:8.1
+        platform: linux/amd64
+        container_name: laravel11_mysql
+        ports:
+            - 3306:3306
+        volumes:
+            - ./mysql:/var/lib/mysql
+        environment:
+            MYSQL_DATABASE: laraveldb
+            MYSQL_USER: laravel
+            MYSQL_PASSWORD: secret
+            MYSQL_ROOT_PASSWORD: secret
+
+    composer:
+        image: composer:latest
+        container_name: laravel11_composer
+        volumes:
+            - ./src:/var/www/html
+        working_dir: /var/www/html
+
+    artisan:
+        build:
+            context: .
+            dockerfile: ./docker/php.Dockerfile
+        container_name: laravel11_artisan
+        volumes:
+            - ./src:/var/www/html
+        working_dir: /var/www/html
+        entrypoint: ['php', 'artisan']
+
+    npm:
+        image: node:current-alpine
+        container_name: laravel11_npm
+        volumes:
+            - ./src:/var/www/html
+        working_dir: /var/www/html
+        entrypoint: ['npm']
+
+    phpmyadmin:
+        image: arm64v8/phpmyadmin:5.2.0
+        container_name: laravel11_phpmyadmin
+        ports:
+            - "8080:80"
+        environment:
+            PMA_HOST: mysql
+            PMA_PORT: 3306
+            MYSQL_ROOT_PASSWORD: secret
+        depends_on:
+            - mysql
+
+
+
+
+
