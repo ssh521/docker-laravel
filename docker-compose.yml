@@ -1,5 +1,6 @@
-services:
+version: '3.8'
 
+services:
     nginx:
         build:
             context: .
@@ -9,9 +10,14 @@ services:
             - mysql
         container_name: laravel11_nginx
         ports:
-            - 8100:80
+            - "${NGINX_PORT:-8100}:80"
         volumes:
             - ./src:/var/www/html
+        networks:
+            - laravel-network
+        restart: unless-stopped
+        env_file:
+            - docker.env
 
     php:
         build:
@@ -20,20 +26,30 @@ services:
         container_name: laravel11_php
         volumes:
             - ./src:/var/www/html
+        networks:
+            - laravel-network
+        restart: unless-stopped
+        env_file:
+            - docker.env
 
     mysql:
         image: mysql:8.1
         platform: linux/amd64
         container_name: laravel11_mysql
         ports:
-            - 3306:3306
+            - "${MYSQL_PORT:-3306}:3306"
         volumes:
-            - ./mysql:/var/lib/mysql
+            - mysql_data:/var/lib/mysql
         environment:
-            MYSQL_DATABASE: laraveldb
-            MYSQL_USER: laravel
-            MYSQL_PASSWORD: secret
-            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_DATABASE: ${MYSQL_DATABASE:-laraveldb}
+            MYSQL_USER: ${MYSQL_USER:-laravel}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD:-secret}
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secret}
+        networks:
+            - laravel-network
+        restart: unless-stopped
+        env_file:
+            - docker.env
 
     composer:
         image: composer:latest
@@ -41,6 +57,10 @@ services:
         volumes:
             - ./src:/var/www/html
         working_dir: /var/www/html
+        networks:
+            - laravel-network
+        env_file:
+            - docker.env
 
     artisan:
         build:
@@ -51,26 +71,46 @@ services:
             - ./src:/var/www/html
         working_dir: /var/www/html
         entrypoint: ['php', 'artisan']
+        networks:
+            - laravel-network
+        env_file:
+            - docker.env
 
     npm:
-        image: node:current-alpine
+        image: node:${NODE_VERSION:-current-alpine}
         container_name: laravel11_npm
         volumes:
             - ./src:/var/www/html
         working_dir: /var/www/html
         entrypoint: ['npm']
+        networks:
+            - laravel-network
+        env_file:
+            - docker.env
 
     phpmyadmin:
         image: arm64v8/phpmyadmin:5.2.0
         container_name: laravel11_phpmyadmin
         ports:
-            - "8080:80"
+            - "${PHPMYADMIN_PORT:-8080}:80"
         environment:
             PMA_HOST: mysql
             PMA_PORT: 3306
-            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secret}
         depends_on:
             - mysql
+        networks:
+            - laravel-network
+        restart: unless-stopped
+        env_file:
+            - docker.env
+
+networks:
+    laravel-network:
+        driver: bridge
+
+volumes:
+    mysql_data:
 
 
 
